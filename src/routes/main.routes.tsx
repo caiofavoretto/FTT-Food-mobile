@@ -1,30 +1,24 @@
 import React from 'react';
-import { createSharedElementStackNavigator } from 'react-navigation-shared-element';
-import { createAppContainer } from 'react-navigation';
-import { enableScreens } from 'react-native-screens';
+import { createStackNavigator } from '@react-navigation/stack';
 
-enableScreens();
-
-import Main from './app.routes';
-import Meal from '../pages/Meal';
+import Main from '../routes/app.routes';
 import EditProfile from '../pages/EditProfile';
 
-const StackNavigator = createSharedElementStackNavigator(
-  {
-    Main,
-    Meal,
-    EditProfile,
-  },
-  {
-    initialRouteName: 'Main',
-    headerMode: 'none',
-    defaultNavigationOptions: {
+const MainStack = createStackNavigator();
+
+const MainRoutes: React.FC = () => (
+  <MainStack.Navigator
+    headerMode="none"
+    screenOptions={{
       headerShown: false,
       cardStyle: {
-        backgroundColor: 'transparent',
+        backgroundColor: '#fff',
       },
-    },
-  },
+    }}
+  >
+    <MainStack.Screen name="Main" component={Main} />
+    <MainStack.Screen name="EditProfile" component={EditProfile} />
+  </MainStack.Navigator>
 );
 
-export default createAppContainer(StackNavigator);
+export default MainRoutes;

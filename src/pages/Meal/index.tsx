@@ -11,7 +11,7 @@ import pt from 'date-fns/locale/pt';
 import { Dimensions, TouchableWithoutFeedback, View, Text } from 'react-native';
 import { useStatusBar } from '../../hooks/statusBar';
 import { useAuth } from '../../hooks/auth';
-import { useNavigation } from 'react-navigation-hooks';
+import { useNavigation } from '@react-navigation/native';
 
 import foodImg from '../../assets/food.jpg';
 
@@ -41,36 +41,7 @@ const Meal: React.FC = () => {
 
   useEffect(setToDark, []);
 
-  return (
-    <Container>
-      {/* <TouchableWithoutFeedback
-        onPress={() => {
-          navigation.navigate('Main', { screen: 'Menu' });
-        }}
-      >
-        <SharedElement id="image">
-          <MealImage style={{ height: 300 }} source={foodImg}></MealImage>
-        </SharedElement>
-      </TouchableWithoutFeedback> */}
-
-      <TouchableWithoutFeedback
-        onPress={() => {
-          navigation.navigate('Main', { screen: 'Menu' });
-        }}
-      >
-        <SharedElement id="text">
-          <MyComp height={1000} />
-        </SharedElement>
-      </TouchableWithoutFeedback>
-    </Container>
-  );
-};
-
-Meal.sharedElements = (navigation: ReturnType<typeof useNavigation>) => {
-  return [
-    { id: 'image', animation: 'fade' },
-    { id: 'text', animation: 'fade' },
-  ];
+  return <Container></Container>;
 };
 
 export default Meal;

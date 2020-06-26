@@ -73,10 +73,9 @@ const Login: React.FC = () => {
           return;
         }
 
-        Alert.alert(
-          'Erro na autenticação',
-          'Ocorreu um erro ao fazer login, cheque as credenciais.',
-        );
+        const { message } = err.response.data;
+
+        Alert.alert('Erro na autenticação', message);
       }
     },
     [signIn],
@@ -109,6 +108,7 @@ const Login: React.FC = () => {
       enabled
     >
       <ScrollView
+        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ flex: 1, backgroundColor: '#fff' }}
       >
@@ -161,7 +161,7 @@ const Login: React.FC = () => {
                 onBlur={animateGrow}
               />
 
-              <Button onPress={() => formRef.current?.submitForm()}>
+              <Button styled onPress={() => formRef.current?.submitForm()}>
                 Login
               </Button>
 
@@ -170,43 +170,6 @@ const Login: React.FC = () => {
               </TextButton>
             </Form>
           </FormContainer>
-
-          {/* <Form>
-            <Input
-              placeholder="Registro"
-              placeholderTextColor="#B0B0BF"
-              autoCorrect={false}
-              autoCapitalize="none"
-              keyboardAppearance="dark"
-              returnKeyType="next"
-              textContentType="username"
-              onSubmitEditing={() => {
-                passwordInputRef.current?.focus();
-              }}
-              onFocus={animateShrink}
-              onBlur={animateGrow}
-            />
-            <Input
-              ref={passwordInputRef}
-              placeholder="Senha"
-              placeholderTextColor="#B0B0BF"
-              autoCorrect={false}
-              autoCapitalize="none"
-              keyboardAppearance="dark"
-              returnKeyType="send"
-              textContentType="password"
-              secureTextEntry
-              onSubmitEditing={handleLogin}
-              onFocus={animateShrink}
-              onBlur={animateGrow}
-            />
-
-            <Button onPress={handleLogin}>Login</Button>
-
-            <TextButton>
-              <TextButtonText>Esqueci minha senha</TextButtonText>
-            </TextButton>
-          </Form> */}
         </Container>
       </ScrollView>
     </KeyboardAvoidingView>

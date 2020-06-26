@@ -1,4 +1,4 @@
-import styled from 'styled-components/native';
+import styled, { css } from 'styled-components/native';
 import { RectButton } from 'react-native-gesture-handler';
 
 export const Container = styled.View`
@@ -17,12 +17,29 @@ export const Touch = styled(RectButton)`
   width: 100%;
   justify-content: center;
   align-items: center;
+
+  shadow-color: #710502;
+  shadow-offset: 0px 3px;
+  shadow-radius: 4.65px;
+  shadow-opacity: 0.29;
+
+  elevation: 7;
 `;
 
-export const ButtonText = styled.Text`
+interface ButtonTextProps {
+  styled: boolean;
+}
+
+export const ButtonText = styled.Text<ButtonTextProps>`
   font-size: 16px;
   font-family: 'Roboto_700Bold';
   color: #fff;
-  text-transform: uppercase;
-  letter-spacing: 3px;
+  text-transform: capitalize;
+
+  ${(props) =>
+    props.styled &&
+    css`
+      text-transform: uppercase;
+      letter-spacing: 3px;
+    `}
 `;

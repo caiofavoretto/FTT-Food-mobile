@@ -13,10 +13,12 @@ import {
 } from 'react-native';
 import { useField } from '@unform/core';
 
-import { Container, TextInput } from './styles';
+import { Container, TextInput, Icon } from './styles';
 
 interface InputProps extends TextInputProps {
   name: string;
+  icon?: string;
+  initialValue?: string;
 }
 
 interface InputValueReference {
@@ -28,12 +30,17 @@ interface InputRef {
 }
 
 const Input: React.RefForwardingComponent<InputRef, InputProps> = (
-  { name, onFocus, onBlur, ...rest },
+  { name, icon, initialValue, onFocus, onBlur, ...rest },
   ref,
 ) => {
   const inputElementRef = useRef<any>(null);
 
-  const { registerField, defaultValue = '', fieldName, error } = useField(name);
+  const {
+    registerField,
+    defaultValue = initialValue,
+    fieldName,
+    error,
+  } = useField(name);
   const inputValueRef = useRef<InputValueReference>({ value: defaultValue });
 
   const [isFocused, setIsFocused] = useState(false);
@@ -81,7 +88,16 @@ const Input: React.RefForwardingComponent<InputRef, InputProps> = (
 
   return (
     <Container isFocused={isFocused} isErrored={!!error}>
+      {icon && (
+        <Icon
+          name={icon}
+          size={20}
+          color={isFocused || isFilled ? '#3b771f' : '#000'}
+        />
+      )}
+
       <TextInput
+        hasIcon={!!icon}
         ref={inputElementRef}
         keyboardAppearance="dark"
         placeholderTextColor="#B0B0BF"

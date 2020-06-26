@@ -1,13 +1,19 @@
-import styled from 'styled-components/native';
+import styled, { css } from 'styled-components/native';
 
-import { Dimensions } from 'react-native';
+import { Dimensions, Platform } from 'react-native';
+
+import Constants from 'expo-constants';
 
 const width = Dimensions.get('window');
 
 export const Container = styled.SafeAreaView`
   flex: 1;
   background: #fff;
-  padding: 0 16px;
+
+  ${Platform.OS === 'android' &&
+  css`
+    padding-top: ${Constants.statusBarHeight}px;
+  `}
 `;
 
 export const Header = styled.View`
@@ -38,59 +44,33 @@ export const DateDescription = styled.Text`
 export const MenuContainer = styled.ScrollView`
   flex: 1;
   width: 100%;
+  z-index: 10;
+
+  ${(props) =>
+    !props.scrollEnabled &&
+    css`
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    `}
 `;
 
-export const MenuContent = styled.View`
+interface MenuContentProps {
+  grow: boolean;
+}
+
+export const MenuContent = styled.TouchableOpacity<MenuContentProps>`
   width: ${width.width}px;
-  padding: 8px 16px;
+  min-height: 472px;
   justify-content: space-between;
-`;
 
-export const Meal = styled.View`
-  flex: 1;
-  background: #fff;
-  border-radius: 32px;
-  padding: 32px;
-  shadow-color: #000;
-  shadow-radius: 5px;
-  shadow-offset: 0px 0px;
-  shadow-opacity: 0.16;
-  elevation: 4;
-`;
-
-export const MealTitle = styled.Text`
-  font-size: 20px;
-  font-family: 'Roboto_700Bold';
-  color: #000;
-`;
-
-export const FoodList = styled.View`
-  flex: 1;
-`;
-
-export const FoodItem = styled.View`
-  margin-top: 18px;
-  flex-direction: row;
-  align-items: center;
-`;
-
-export const FoodText = styled.Text`
-  margin-left: 16px;
-  font-size: 16px;
-  font-family: 'Roboto_700Bold';
-  color: #555763;
-`;
-
-export const FoodDescription = styled.Text`
-  font-size: 16px;
-  font-family: 'Roboto_400Regular';
-  color: #555763;
-`;
-
-export const MealImage = styled.Image`
-  height: 170px;
-  width: 100%;
-  border-radius: 22px;
+  ${(props) =>
+    !props.grow &&
+    css`
+      padding: 8px 16px;
+    `}
 `;
 
 export const MenuNav = styled.View`

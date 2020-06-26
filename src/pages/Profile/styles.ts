@@ -1,16 +1,22 @@
-import styled from 'styled-components/native';
+import styled, { css } from 'styled-components/native';
 import { StyleSheet } from 'react-native';
-import { RectButton } from 'react-native-gesture-handler';
+
+import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 export const Container = styled.SafeAreaView`
   flex: 1;
   background: #fff;
-  padding: 0 16px;
+
+  ${Platform.OS === 'android' &&
+  css`
+    padding-top: ${Constants.statusBarHeight}px;
+  `}
 `;
 
 export const Header = styled.View`
   flex-direction: row;
-  padding: 16px;
+  padding: 32px 16px;
   justify-content: space-between;
   align-items: center;
   border-bottom-color: #eaedf2;
@@ -20,7 +26,6 @@ export const Header = styled.View`
 export const User = styled.View`
   flex-direction: row;
   align-items: center;
-  padding: 16px;
 `;
 
 export const AvatarContainer = styled.TouchableOpacity`
@@ -60,10 +65,11 @@ export const ButtonSettings = styled.TouchableOpacity``;
 
 export const Options = styled.View`
   flex: 1;
+  padding: 0 16px;
 `;
 
 export const OptionButton = styled.TouchableOpacity`
-  padding: 32px;
+  padding: 32px 16px;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
@@ -88,22 +94,4 @@ export const Title = styled.Text`
 export const Description = styled.Text`
   font-size: 16px;
   margin-top: 4px;
-`;
-
-export const Button = styled(RectButton)`
-  margin-top: 32px;
-  background: #710502;
-  height: 42px;
-  border-radius: 21px;
-  width: 100%;
-  justify-content: center;
-  align-items: center;
-`;
-
-export const ButtonText = styled.Text`
-  font-size: 16px;
-  font-family: 'Roboto_700Bold';
-  color: #fff;
-  text-transform: uppercase;
-  letter-spacing: 3px;
 `;

@@ -5,28 +5,17 @@ import { Container, Touch, ButtonText } from './styles';
 
 interface ButtonProps extends RectButtonProperties {
   children: string;
+  styled: boolean;
 }
 
-const Button: React.FC<ButtonProps> = ({ children, ...rest }) => {
+const StyledButton: React.FC<ButtonProps> = ({ styled, children, ...rest }) => {
   return (
-    <Container
-      style={{
-        shadowColor: '#710502',
-        shadowOffset: {
-          width: 0,
-          height: 3,
-        },
-        shadowOpacity: 0.29,
-        shadowRadius: 4.65,
-
-        elevation: 7,
-      }}
-    >
+    <Container>
       <Touch {...rest}>
-        <ButtonText>{children}</ButtonText>
+        <ButtonText styled={styled}>{children}</ButtonText>
       </Touch>
     </Container>
   );
 };
 
-export default Button;
+export default StyledButton;
