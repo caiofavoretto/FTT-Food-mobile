@@ -2,6 +2,7 @@ import React from 'react';
 import {
   FontAwesome as Icon,
   MaterialCommunityIcons,
+  FontAwesome5,
 } from '@expo/vector-icons';
 
 import foodImg from '../../assets/food.jpg';
@@ -9,9 +10,11 @@ import foodImg from '../../assets/food.jpg';
 import {
   Container,
   MealTitle,
-  MealRating,
+  MealAction,
   RatingText,
-  MealNotRated,
+  NotAttendant,
+  ActionButton,
+  ActionButtonText,
   FoodList,
   FoodItem,
   FoodText,
@@ -30,30 +33,56 @@ interface MealData {
   id: string;
   description: string;
   date: string;
+  dayOfTheWeek: string;
   image_url: string;
   rating: number;
   foods: FoodsData[];
+  today: boolean;
+  attendant: string;
 }
 
 interface MealProps {
   data: MealData;
   grow: boolean;
+  handleAttendance(attendance: string): void;
 }
 
-const Meal: React.FC<MealProps> = ({ data, grow }) => {
+const Meal: React.FC<MealProps> = ({ data, grow, handleAttendance }) => {
   return (
     <Container grow={grow}>
-      <MealTitle>{data.date}</MealTitle>
-      <MealRating>
-        {data.rating ? (
-          <>
-            <Icon name="star" color="#f4a927" size={18} />
-            <RatingText>{data.rating}</RatingText>
-          </>
+      <MealTitle>{data.dayOfTheWeek}</MealTitle>
+      <MealAction>
+        {!data.today ? (
+          data.attendant ? (
+            data.rating ? (
+              <>
+                <Icon name="star" color="#f4a927" size={18} />
+                <RatingText>{data.rating.toFixed(1)}</RatingText>
+              </>
+            ) : (
+              <ActionButton rate>
+                <Icon name="star" color="#fff" size={12} />
+                <ActionButtonText>Avaliar</ActionButtonText>
+              </ActionButton>
+            )
+          ) : (
+            <NotAttendant>Não presente</NotAttendant>
+          )
         ) : (
-          <MealNotRated>Não avaliado</MealNotRated>
+          <ActionButton
+            activeOpacity={0.7}
+            attendant={!!data.attendant}
+            onPress={() => handleAttendance(data.attendant)}
+          >
+            <FontAwesome5
+              name={!!data.attendant ? 'user-check' : 'user-plus'}
+              color="#fff"
+              size={12}
+            />
+            <ActionButtonText>Presença</ActionButtonText>
+          </ActionButton>
         )}
-      </MealRating>
+      </MealAction>
 
       <FoodList>
         {data.foods.map((food) => (

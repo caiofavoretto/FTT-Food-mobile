@@ -57,17 +57,13 @@ export const MenuContainer = styled.ScrollView`
     `}
 `;
 
-interface MenuContentProps {
-  grow: boolean;
-}
-
-export const MenuContent = styled.TouchableOpacity<MenuContentProps>`
+export const MenuContent = styled.TouchableOpacity`
   width: ${width.width}px;
   min-height: 472px;
   justify-content: space-between;
 
   ${(props) =>
-    !props.grow &&
+    !props.disabled &&
     css`
       padding: 8px 16px;
     `}

@@ -1,5 +1,7 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { useStatusBar } from '../../hooks/statusBar';
+
 import { format } from 'date-fns';
 import pt from 'date-fns/locale/pt';
 
@@ -51,28 +53,41 @@ const Search: React.FC = () => {
   let searchTimer: number | null;
 
   const navigation = useNavigation();
+  const { setToDark } = useStatusBar();
 
-  navigation.addListener('focus', () => {
+  const getApiData = useCallback(() => {
+    api
+      .get(
+        `/foods${
+          !!inputValueRef.current.value
+            ? `?name=${inputValueRef.current.value}`
+            : ''
+        }`,
+      )
+      .then((response) => {
+        setFoods(response.data);
+      });
     api.get('/suggestions/users').then((response) => {
+      setToDark();
       if (response.data) {
         setAlreadySugegsted(true);
       } else {
         setAlreadySugegsted(false);
       }
     });
-  });
+  }, [setFoods]);
 
-  useEffect(() => {
-    api.get('/foods').then((response) => {
-      setFoods(response.data);
-    });
-  }, []);
+  navigation.addListener('focus', getApiData);
+
+  useEffect(setToDark, []);
+
+  useEffect(getApiData, []);
 
   const handleInputFocus = useCallback(
     (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
       setIsFocused(true);
     },
-    [],
+    [setIsFocused],
   );
 
   const handleInputBlur = useCallback(
@@ -81,66 +96,74 @@ const Search: React.FC = () => {
 
       setIsFilled(!!inputValueRef.current.value);
     },
-    [],
+    [setIsFocused],
   );
 
-  const handleSearchFoods = useCallback(async (searchResult: string) => {
-    inputValueRef.current.value = searchResult;
-    if (searchTimer) {
-      clearTimeout(searchTimer);
-      searchTimer = null;
-    }
-    searchTimer = setTimeout(() => {
-      api.get(`/foods?name=${searchResult}`).then((response) => {
-        setFoods(response.data);
+  const handleSearchFoods = useCallback(
+    async (searchResult: string) => {
+      inputValueRef.current.value = searchResult;
+      if (searchTimer) {
+        clearTimeout(searchTimer);
+        searchTimer = null;
+      }
+      searchTimer = setTimeout(() => {
+        api.get(`/foods?name=${searchResult}`).then((response) => {
+          setFoods(response.data);
+        });
+
+        searchTimer = null;
+      }, 500);
+    },
+    [setFoods],
+  );
+
+  const handleSuggestFood = useCallback(
+    async (food_id: string) => {
+      const suggestedFood = foods.find((food) => food.id === food_id);
+
+      const today = format(new Date(), 'eeee', {
+        useAdditionalWeekYearTokens: true,
+        locale: pt,
       });
 
-      searchTimer = null;
-    }, 500);
-  }, []);
+      if (!suggestedFood) {
+        Alert.alert(
+          'Algo deu errado',
+          'A sua sugestão não foi confirmada, por favor tente novamente.',
+        );
+        return;
+      }
 
-  const handleSuggestFood = useCallback(async (food_id: string) => {
-    const suggestedFood = foods.find((food) => food.id === food_id);
-
-    const today = format(new Date(), 'eeee', {
-      useAdditionalWeekYearTokens: true,
-      locale: pt,
-    });
-
-    if (!suggestedFood) {
       Alert.alert(
-        'Algo deu errado',
-        'A sua sugestão não foi confirmada, por favor tente novamente.',
-      );
-      return;
-    }
+        'Sugerir esta comida',
+        `Você está sugerindo ${suggestedFood?.name} para a refeição da próxima ${today}`,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              api
+                .post('/suggestions', { food_id })
+                .then((response) => {
+                  setAlreadySugegsted(true);
+                })
+                .catch((err) => {
+                  const { message } = err.response.data;
+                  Alert.alert('Ops.', message);
+                });
 
-    Alert.alert(
-      'Sugerir esta comida',
-      `Você está sugerindo ${suggestedFood?.name} para a refeição da próxima ${today}`,
-      [
-        {
-          text: 'OK',
-          onPress: () => {
-            api
-              .post('/suggestions', { food_id })
-              .then((response) => {
-                setAlreadySugegsted(true);
-              })
-              .catch((err) => {
-                const { message } = err.response.data;
-                Alert.alert('Ops.', message);
-              });
+              setAlreadySugegsted(true);
+            },
           },
-        },
-        {
-          text: 'Cancelar',
-          onPress: () => {},
-        },
-      ],
-      { cancelable: false },
-    );
-  }, []);
+          {
+            text: 'Cancelar',
+            onPress: () => {},
+          },
+        ],
+        { cancelable: false },
+      );
+    },
+    [foods],
+  );
 
   const listFoods = useCallback(() => {
     let counterYellow = 2;

@@ -18,6 +18,10 @@ interface User {
     id: number;
     description: string;
   };
+  gender: {
+    id: number;
+    description: string;
+  };
   avatar_url: string;
   updated_at: string;
 }

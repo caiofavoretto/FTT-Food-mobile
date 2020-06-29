@@ -29,7 +29,7 @@ export const MealTitle = styled.Text`
   text-transform: capitalize;
 `;
 
-export const MealRating = styled.View`
+export const MealAction = styled.View`
   position: absolute;
   top: 32px;
   right: 32px;
@@ -40,12 +40,47 @@ export const MealRating = styled.View`
 export const RatingText = styled.Text`
   font-size: 16px;
   margin-left: 8px;
+  font-family: 'Roboto_400Regular';
 `;
 
-export const MealNotRated = styled.Text`
+export const NotAttendant = styled.Text`
   font-size: 16px;
   margin-left: 8px;
   color: #b0b0bf;
+  font-family: 'Roboto_500Medium';
+`;
+
+interface ActionButtonProps {
+  attendant?: boolean;
+  rate?: boolean;
+}
+
+export const ActionButton = styled.TouchableOpacity<ActionButtonProps>`
+  margin-left: 8px;
+  background: #b0b0bf;
+  ${(props) =>
+    props.attendant &&
+    css`
+      background: #4d6219;
+    `}
+
+  ${(props) =>
+    props.rate &&
+    css`
+      background: #f17b15;
+    `}
+
+  transform: translateY(-2px);
+  padding: 4px 10px;
+  border-radius: 8px;
+  flex-direction: row;
+  align-items: center;
+`;
+
+export const ActionButtonText = styled.Text`
+  margin-left: 8px;
+  font-size: 16px;
+  color: #fff;
   font-family: 'Roboto_500Medium';
 `;
 

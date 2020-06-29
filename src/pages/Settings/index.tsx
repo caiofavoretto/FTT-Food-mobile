@@ -1,8 +1,9 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Feather as Icon } from '@expo/vector-icons';
 
 import { useAuth } from '../../hooks/auth';
+import { useStatusBar } from '../../hooks/statusBar';
 
 import {
   Container,
@@ -28,7 +29,11 @@ const Settings: React.FC = () => {
   }, []);
 
   const navigation = useNavigation();
+  const { setToDark } = useStatusBar();
   const { signOut } = useAuth();
+
+  navigation.addListener('focus', setToDark);
+  useEffect(setToDark, []);
 
   return (
     <Container>

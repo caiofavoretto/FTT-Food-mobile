@@ -46,6 +46,7 @@ const Profile: React.FC = () => {
 
   const { navigateToEditProfile } = route.params as Params;
 
+  navigation.addListener('focus', setToDark);
   useEffect(setToDark, []);
 
   const requestCameraRollPermission = useCallback(async (): Promise<

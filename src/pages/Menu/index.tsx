@@ -1,11 +1,8 @@
 import React, { useEffect, useState, useCallback, useContext } from 'react';
-import {
-  FontAwesome as Icon,
-  MaterialCommunityIcons,
-} from '@expo/vector-icons';
+import { FontAwesome as Icon } from '@expo/vector-icons';
 import { format, addDays, parseISO } from 'date-fns';
 import pt from 'date-fns/locale/pt';
-import { Dimensions, StyleSheet } from 'react-native';
+import { Dimensions, Alert } from 'react-native';
 import { useStatusBar } from '../../hooks/statusBar';
 import { useAuth } from '../../hooks/auth';
 import { useNavigation } from '@react-navigation/native';
@@ -39,9 +36,12 @@ interface MealData {
   id: string;
   description: string;
   date: string;
+  dayOfTheWeek: string;
   image_url: string;
   rating: number;
   foods: FoodsData[];
+  today: boolean;
+  attendant: string;
 }
 
 interface MenuData {
@@ -67,10 +67,17 @@ const Menu: React.FC = () => {
 
   const [menuPage, setMenuPage] = useState(1);
 
-  const { setToDark } = useStatusBar();
+  const { setToDark, setToLight } = useStatusBar();
   const { user } = useAuth();
 
-  navigation.addListener('focus', setToDark);
+  navigation.addListener('focus', () => {
+    if (modalOpen) {
+      setToLight();
+    } else {
+      setToDark();
+    }
+  });
+
   useEffect(setToDark, []);
 
   useEffect(() => {
@@ -89,68 +96,30 @@ const Menu: React.FC = () => {
 
         if (menuResponse.monday_meal) {
           const meal = menuResponse.monday_meal as MealData;
-          meal.date = format(parseISO(menuResponse.initial_date), 'eeee', {
-            useAdditionalWeekYearTokens: true,
-            locale: pt,
-          });
+
+          meal.attendant = 'true';
 
           mealsResponse.push(meal);
         }
 
         if (menuResponse.tuesday_meal) {
           const meal = menuResponse.tuesday_meal as MealData;
-          meal.date = format(
-            addDays(parseISO(menuResponse.initial_date), 1),
-            'eeee',
-            {
-              useAdditionalWeekYearTokens: true,
-              locale: pt,
-            },
-          );
+
+          meal.attendant = 'true';
 
           mealsResponse.push(meal);
         }
 
         if (menuResponse.wednesday_meal) {
-          const meal = menuResponse.wednesday_meal as MealData;
-          meal.date = format(
-            addDays(parseISO(menuResponse.initial_date), 2),
-            'eeee',
-            {
-              useAdditionalWeekYearTokens: true,
-              locale: pt,
-            },
-          );
-
-          mealsResponse.push(meal);
+          mealsResponse.push(menuResponse.wednesday_meal);
         }
 
         if (menuResponse.thursday_meal) {
-          const meal = menuResponse.thursday_meal as MealData;
-          meal.date = format(
-            addDays(parseISO(menuResponse.initial_date), 3),
-            'eeee',
-            {
-              useAdditionalWeekYearTokens: true,
-              locale: pt,
-            },
-          );
-
-          mealsResponse.push(meal);
+          mealsResponse.push(menuResponse.thursday_meal);
         }
 
         if (menuResponse.friday_meal) {
-          const meal = menuResponse.friday_meal as MealData;
-          meal.date = format(
-            addDays(parseISO(menuResponse.initial_date), 4),
-            'eeee',
-            {
-              useAdditionalWeekYearTokens: true,
-              locale: pt,
-            },
-          );
-
-          mealsResponse.push(meal);
+          mealsResponse.push(menuResponse.friday_meal);
         }
 
         setMeals(mealsResponse);
@@ -160,6 +129,22 @@ const Menu: React.FC = () => {
       });
   }, []);
 
+  const handleOpenModal = useCallback(() => {
+    console.log('open');
+    if (!modalOpen) {
+      setToLight();
+      setModalOpen(true);
+    }
+  }, [modalOpen]);
+
+  const handleCloseModal = useCallback(() => {
+    console.log('close');
+    if (modalOpen) {
+      setToDark();
+      setModalOpen(false);
+    }
+  }, [modalOpen]);
+
   const handleMenuContainerScroll = useCallback((event) => {
     const offset = Number(event.nativeEvent.contentOffset.x);
     const { width } = Dimensions.get('window');
@@ -167,11 +152,47 @@ const Menu: React.FC = () => {
     setMenuPage(page);
   }, []);
 
+  const handleAttendance = useCallback(async (attendance: string) => {
+    console.log(attendance);
+    try {
+      if (!attendance) {
+        const response = await api.post('/attendances');
+
+        setMeals((prevMeals) =>
+          prevMeals.filter((prevMeal) => {
+            if (prevMeal.today) {
+              prevMeal.attendant = response.data.id;
+            }
+
+            return prevMeal;
+          }),
+        );
+      } else {
+        await api.delete(`/attendances/${attendance}`);
+
+        setMeals((prevMeals) =>
+          prevMeals.filter((prevMeal) => {
+            if (prevMeal.today) {
+              prevMeal.attendant = '';
+            }
+
+            return prevMeal;
+          }),
+        );
+      }
+    } catch (err) {
+      const { message } = err.response.data;
+
+      Alert.alert('Ops.', message);
+    }
+  }, []);
+
   return (
     <Container>
       <Header>
         <Title>
-          Bem vindo, <Name>{user.name}</Name>
+          Bem vind{user.gender.description === 'Masculino' ? 'o' : 'a'},{' '}
+          <Name>{user.name}</Name>
         </Title>
         <DateDescription>
           {format(new Date(), 'd MMM yyyy', {
@@ -197,18 +218,30 @@ const Menu: React.FC = () => {
       >
         {meals.map((meal) => (
           <MenuContent
-            grow={modalOpen}
             activeOpacity={1}
-            onPress={() => setModalOpen((prevState) => !prevState)}
+            onPress={handleOpenModal}
             key={`${meal.id}-${meal.date}`}
+            disabled={modalOpen}
           >
-            {modalOpen && <MealDetails grow={modalOpen} data={meal} />}
-            {!modalOpen && <Meal grow={modalOpen} data={meal} />}
+            {modalOpen && (
+              <MealDetails
+                close={handleCloseModal}
+                grow={modalOpen}
+                data={meal}
+              />
+            )}
+            {!modalOpen && (
+              <Meal
+                handleAttendance={handleAttendance}
+                grow={modalOpen}
+                data={meal}
+              />
+            )}
           </MenuContent>
         ))}
       </MenuContainer>
       <MenuNav>
-        {meals.map((meal, index) => (
+        {meals.map((_, index) => (
           <Icon
             key={String(index)}
             name="circle"

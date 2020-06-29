@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useStatusBar } from '../../hooks/statusBar';
 import { useAuth } from '../../hooks/auth';
+import { useNavigation } from '@react-navigation/native';
 
 import { Form } from '@unform/mobile';
 import { FormHandles } from '@unform/core';
@@ -43,7 +44,11 @@ const Login: React.FC = () => {
 
   const { setToLight } = useStatusBar();
   const { signIn } = useAuth();
-  // navigation.addListener('focus', setToLight);
+
+  const navigation = useNavigation();
+
+  navigation.addListener('focus', setToLight);
+
   useEffect(setToLight, []);
 
   const handleLogin = useCallback(
