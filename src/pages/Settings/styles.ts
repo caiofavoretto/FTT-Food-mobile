@@ -4,9 +4,13 @@ import { StyleSheet } from 'react-native';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
-export const Container = styled.SafeAreaView`
+interface ThemeProps {
+  theme: 'light' | 'dark';
+}
+
+export const Container = styled.SafeAreaView<ThemeProps>`
   flex: 1;
-  background: #fff;
+  background: ${(props) => (props.theme === 'light' ? '#fff' : '#000')};
 
   ${Platform.OS === 'android' &&
   css`
@@ -23,9 +27,10 @@ export const Header = styled.View`
 
 export const BackButton = styled.TouchableOpacity``;
 
-export const Title = styled.Text`
+export const Title = styled.Text<ThemeProps>`
   font-size: 24px;
   font-family: 'Roboto_500Medium';
+  color: ${(props) => (props.theme === 'light' ? '#000' : '#fff')};
 `;
 
 export const Empty = styled.View``;
@@ -41,30 +46,35 @@ export const ThemeSwitch = styled.View`
 `;
 export const SwitchInfo = styled.View``;
 
-export const SwitchTitle = styled.Text`
+export const SwitchTitle = styled.Text<ThemeProps>`
+  color: ${(props) => (props.theme === 'light' ? '#000' : '#fff')};
+
   font-size: 18px;
   font-family: 'Roboto_700Bold';
 `;
 
-export const SwitchDescription = styled.Text`
+export const SwitchDescription = styled.Text<ThemeProps>`
+  color: ${(props) => (props.theme === 'light' ? '#000' : '#fff')};
+
   margin-top: 8px;
   font-size: 16px;
 `;
 
 export const Switch = styled.Switch``;
 
-export const LogOutButton = styled.TouchableOpacity`
+export const LogOutButton = styled.TouchableOpacity<ThemeProps>`
   margin-top: 32px;
   padding: 32px 0;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
   border-top-width: ${StyleSheet.hairlineWidth}px;
-  border-top-color: #eaedf2;
+  border-top-color: ${(props) =>
+    props.theme === 'light' ? '#eaedf2' : '#333'};
 `;
 
-export const LogOutButtonText = styled.Text`
-  color: #710502;
+export const LogOutButtonText = styled.Text<ThemeProps>`
+  color: ${(props) => (props.theme === 'light' ? '#710502' : '#8A0E0B')};
   font-size: 18px;
   font-family: 'Roboto_700Bold';
 `;

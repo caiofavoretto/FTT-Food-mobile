@@ -1,16 +1,20 @@
 import styled, { css } from 'styled-components/native';
 import Constants from 'expo-constants';
+import { Dimensions, Platform } from 'react-native';
 
-import { Dimensions } from 'react-native';
 const { width } = Dimensions.get('window');
 
-interface ContainerProps {
+interface ThemeProps {
+  theme: 'light' | 'dark';
+}
+
+interface ContainerProps extends ThemeProps {
   grow: boolean;
 }
 
 export const Container = styled.View<ContainerProps>`
   flex: 1;
-  background: #fff;
+  background: ${(props) => (props.theme === 'light' ? '#fff' : '#000')};
   padding: 32px;
   position: relative;
   ${(props) =>
@@ -36,7 +40,7 @@ export const MealImage = styled.Image`
 
 export const CloseButton = styled.TouchableOpacity`
   position: absolute;
-  top: ${Constants.statusBarHeight + 8}px;
+  top: 16px;
   right: 16px;
   flex-direction: row;
   align-items: center;
@@ -53,6 +57,19 @@ export const CloseButton = styled.TouchableOpacity`
   elevation: 7;
 `;
 
+export const RateAction = styled.View`
+  padding: 12px;
+  border-top-right-radius: 32px;
+  border-bottom-right-radius: 32px;
+  background: #000c;
+  position: absolute;
+  top: 182px;
+  left: 0;
+  flex-direction: row;
+  align-items: center;
+  z-index: 20;
+`;
+
 export const MealAction = styled.View`
   position: absolute;
   top: 208px;
@@ -66,10 +83,9 @@ export const RatingContainer = styled.View`
   padding: 12px;
   border-top-left-radius: 32px;
   border-bottom-left-radius: 32px;
-  background: #fff;
+  background: #fffd;
   position: absolute;
   right: -16px;
-  width: 80px;
   flex-direction: row;
   align-items: center;
 `;
@@ -84,22 +100,35 @@ export const RatingText = styled.Text`
 export const NotAttendant = styled.Text`
   font-size: 16px;
   margin-left: 8px;
-  color: #fff;
+  color: #000;
   font-family: 'Roboto_500Medium';
 `;
 
 interface ActionButtonProps {
-  color: string;
+  attendant?: boolean;
+  rate?: boolean;
 }
 
 export const ActionButton = styled.TouchableOpacity<ActionButtonProps>`
   margin-left: 8px;
-  background: ${(props) => props.color};
   transform: translateY(-2px);
   padding: 4px 10px;
   border-radius: 8px;
   flex-direction: row;
   align-items: center;
+  background: #b0b0bf;
+
+  ${(props) =>
+    props.attendant &&
+    css`
+      background: #4d6219;
+    `}
+
+  ${(props) =>
+    props.rate &&
+    css`
+      background: #f17b15;
+    `}
 
   shadow-color: #000;
   shadow-offset: 0px 3px;
@@ -122,12 +151,19 @@ export const MealContent = styled.ScrollView`
   z-index: 10;
 `;
 
-export const MealTitle = styled.Text`
-  margin-top: 256px;
+export const MealTitle = styled.Text<ThemeProps>`
+  margin-top: 16px;
   font-size: 28px;
   font-family: 'Roboto_700Bold';
-  color: #000;
+  color: ${(props) => (props.theme === 'light' ? '#000' : '#fff')};
   text-transform: capitalize;
+`;
+
+export const MealDescription = styled.Text`
+  margin-top: 248px;
+  font-size: 16px;
+  font-family: 'Roboto_500Medium';
+  color: #b0b0bf;
 `;
 
 export const FoodList = styled.View`
@@ -140,15 +176,15 @@ export const FoodItem = styled.View`
   align-items: center;
 `;
 
-export const FoodText = styled.Text`
+export const FoodText = styled.Text<ThemeProps>`
   margin-left: 16px;
   font-size: 20px;
   font-family: 'Roboto_700Bold';
-  color: #555763;
+  color: ${(props) => (props.theme === 'light' ? '#555763' : '#999')};
 `;
 
-export const FoodDescription = styled.Text`
+export const FoodDescription = styled.Text<ThemeProps>`
   font-size: 16px;
   font-family: 'Roboto_400Regular';
-  color: #555763;
+  color: ${(props) => (props.theme === 'light' ? '#555763' : '#999')};
 `;

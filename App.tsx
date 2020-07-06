@@ -2,8 +2,6 @@ import 'react-native-gesture-handler';
 
 import React from 'react';
 import { AppLoading } from 'expo';
-import { View } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
 
 import {
   Roboto_400Regular,
@@ -14,7 +12,7 @@ import {
 
 import AppProvider from './src/hooks';
 
-import Routes from './src/routes';
+import Index from './src/index';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -28,12 +26,8 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
-      <AppProvider>
-        <View style={{ flex: 1, backgroundColor: '#312e38' }}>
-          <Routes />
-        </View>
-      </AppProvider>
-    </NavigationContainer>
+    <AppProvider>
+      <Index />
+    </AppProvider>
   );
 }

@@ -12,7 +12,7 @@ const MainRoutes: React.FC = () => (
     screenOptions={{
       headerShown: false,
       cardStyle: {
-        backgroundColor: '#fff',
+        backgroundColor: 'transparent',
       },
     }}
   >

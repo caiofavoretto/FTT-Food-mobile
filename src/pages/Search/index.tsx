@@ -1,6 +1,7 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { ActivityIndicator } from 'react-native';
 import { useStatusBar } from '../../hooks/statusBar';
+import { useTheme } from '../../hooks/theme';
 
 import { format } from 'date-fns';
 import pt from 'date-fns/locale/pt';
@@ -9,10 +10,9 @@ import {
   Dimensions,
   NativeSyntheticEvent,
   TextInputFocusEventData,
+  RefreshControl,
   Alert,
 } from 'react-native';
-
-import foodImg from '../../assets/food.jpg';
 
 import {
   Container,
@@ -25,6 +25,8 @@ import {
   InputContainer,
   TextInput,
   Icon,
+  LoadContainer,
+  SuggestLoadContainer,
 } from './styles';
 import api from '../../services/api';
 
@@ -40,6 +42,8 @@ interface FoodData {
 }
 
 const Search: React.FC = () => {
+  const [loading, setLoading] = useState(true);
+  const [suggestLoad, setSuggestLoad] = useState(false);
   const [foods, setFoods] = useState<FoodData[]>([]);
   const [alreadySuggested, setAlreadySugegsted] = useState(false);
 
@@ -52,21 +56,16 @@ const Search: React.FC = () => {
 
   let searchTimer: number | null;
 
-  const navigation = useNavigation();
   const { setToDark } = useStatusBar();
+  const { getCurrentTheme } = useTheme();
 
   const getApiData = useCallback(() => {
-    api
-      .get(
-        `/foods${
-          !!inputValueRef.current.value
-            ? `?name=${inputValueRef.current.value}`
-            : ''
-        }`,
-      )
-      .then((response) => {
-        setFoods(response.data);
-      });
+    setLoading(true);
+
+    api.get(`/foods`).then((response) => {
+      inputValueRef.current.value = '';
+      setFoods(response.data);
+    });
     api.get('/suggestions/users').then((response) => {
       setToDark();
       if (response.data) {
@@ -74,12 +73,9 @@ const Search: React.FC = () => {
       } else {
         setAlreadySugegsted(false);
       }
+      setLoading(false);
     });
   }, [setFoods]);
-
-  navigation.addListener('focus', getApiData);
-
-  useEffect(setToDark, []);
 
   useEffect(getApiData, []);
 
@@ -107,8 +103,10 @@ const Search: React.FC = () => {
         searchTimer = null;
       }
       searchTimer = setTimeout(() => {
+        setLoading(true);
         api.get(`/foods?name=${searchResult}`).then((response) => {
           setFoods(response.data);
+          setLoading(false);
         });
 
         searchTimer = null;
@@ -139,24 +137,32 @@ const Search: React.FC = () => {
         `Você está sugerindo ${suggestedFood?.name} para a refeição da próxima ${today}`,
         [
           {
+            text: 'Cancelar',
+            onPress: () => {},
+          },
+          {
             text: 'OK',
             onPress: () => {
+              setSuggestLoad(true);
               api
                 .post('/suggestions', { food_id })
                 .then((response) => {
                   setAlreadySugegsted(true);
+
+                  setTimeout(() => {
+                    setSuggestLoad(false);
+                  }, 2000);
                 })
                 .catch((err) => {
                   const { message } = err.response.data;
-                  Alert.alert('Ops.', message);
+                  setTimeout(() => {
+                    Alert.alert('Ops.', message);
+                    setSuggestLoad(false);
+                  }, 5000);
                 });
 
               setAlreadySugegsted(true);
             },
-          },
-          {
-            text: 'Cancelar',
-            onPress: () => {},
           },
         ],
         { cancelable: false },
@@ -259,21 +265,36 @@ const Search: React.FC = () => {
         )}
       </Header>
 
-      <FoodsContainer
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{
-          width: width,
-          backgroundColor: '#fff',
-          paddingHorizontal: 16,
-          marginTop: 16,
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          justifyContent: 'space-between',
-        }}
-      >
-        {listFoods()}
-      </FoodsContainer>
+      {suggestLoad && (
+        <SuggestLoadContainer>
+          <ActivityIndicator size="small" color="#fff" />
+        </SuggestLoadContainer>
+      )}
+
+      {!loading ? (
+        <FoodsContainer
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl refreshing={loading} onRefresh={getApiData} />
+          }
+          contentContainerStyle={{
+            width: width,
+            backgroundColor: '#fff',
+            paddingHorizontal: 16,
+            marginTop: 16,
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+          }}
+        >
+          {listFoods()}
+        </FoodsContainer>
+      ) : (
+        <LoadContainer>
+          <ActivityIndicator />
+        </LoadContainer>
+      )}
     </Container>
   );
 };

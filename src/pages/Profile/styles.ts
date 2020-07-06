@@ -4,9 +4,13 @@ import { StyleSheet } from 'react-native';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
-export const Container = styled.SafeAreaView`
+interface ThemeProps {
+  theme: 'light' | 'dark';
+}
+
+export const Container = styled.SafeAreaView<ThemeProps>`
   flex: 1;
-  background: #fff;
+  background: ${(props) => (props.theme === 'light' ? '#fff' : '#000')};
 
   ${Platform.OS === 'android' &&
   css`
@@ -14,12 +18,20 @@ export const Container = styled.SafeAreaView`
   `}
 `;
 
-export const Header = styled.View`
+export const Header = styled.View<ThemeProps>`
   flex-direction: row;
   padding: 32px 16px;
+
+  ${Platform.OS === 'ios' &&
+  css`
+    padding-top: 16px;
+  `}
+
   justify-content: space-between;
   align-items: center;
-  border-bottom-color: #eaedf2;
+  border-bottom-color: ${(props) =>
+    props.theme === 'light' ? '#eaedf2' : '#333'};
+
   border-bottom-width: ${StyleSheet.hairlineWidth}px;
 `;
 
@@ -50,7 +62,8 @@ export const UserInfo = styled.View`
   margin-left: 16px;
 `;
 
-export const UserName = styled.Text`
+export const UserName = styled.Text<ThemeProps>`
+  color: ${(props) => (props.theme === 'light' ? '#000' : '#fff')};
   font-size: 20px;
   font-family: 'Roboto_700Bold';
 `;
@@ -68,12 +81,13 @@ export const Options = styled.View`
   padding: 0 16px;
 `;
 
-export const OptionButton = styled.TouchableOpacity`
+export const OptionButton = styled.TouchableOpacity<ThemeProps>`
   padding: 32px 16px;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  border-bottom-color: #eaedf2;
+  border-bottom-color: ${(props) =>
+    props.theme === 'light' ? '#eaedf2' : '#333'};
   border-bottom-width: ${StyleSheet.hairlineWidth}px;
 `;
 
@@ -86,12 +100,14 @@ export const Content = styled.View`
   margin-left: 16px;
 `;
 
-export const Title = styled.Text`
+export const Title = styled.Text<ThemeProps>`
+  color: ${(props) => (props.theme === 'light' ? '#000' : '#fff')};
   font-size: 18px;
   font-family: 'Roboto_500Medium';
 `;
 
-export const Description = styled.Text`
+export const Description = styled.Text<ThemeProps>`
+  color: ${(props) => (props.theme === 'light' ? '#000' : '#fff')};
   font-size: 16px;
   margin-top: 4px;
 `;

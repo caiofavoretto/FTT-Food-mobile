@@ -4,6 +4,7 @@ import { Feather as Icon } from '@expo/vector-icons';
 
 import { useAuth } from '../../hooks/auth';
 import { useStatusBar } from '../../hooks/statusBar';
+import { useTheme } from '../../hooks/theme';
 
 import {
   Container,
@@ -22,49 +23,77 @@ import {
 } from './styles';
 
 const Settings: React.FC = () => {
-  const [isEnabled, SetIsEnabled] = useState(false);
+  const { getCurrentTheme, setToDarkTheme, setToLightTheme } = useTheme();
+
+  const [isEnabled, SetIsEnabled] = useState(
+    getCurrentTheme() === 'light' ? false : true,
+  );
 
   const handleToggleSwitch = useCallback(() => {
-    SetIsEnabled((previousState) => !previousState);
+    if (isEnabled) {
+      console.log('set to light');
+      setToLightTheme();
+      SetIsEnabled(false);
+    } else {
+      console.log('set to dark');
+      SetIsEnabled(true);
+      setToDarkTheme();
+    }
   }, []);
 
   const navigation = useNavigation();
-  const { setToDark } = useStatusBar();
+  const { setToDark, setToLight } = useStatusBar();
   const { signOut } = useAuth();
 
-  navigation.addListener('focus', setToDark);
-  useEffect(setToDark, []);
+  useEffect(() => {
+    if (getCurrentTheme() === 'light') {
+      setToDark();
+    } else {
+      setToLight();
+    }
+  }, []);
 
   return (
-    <Container>
+    <Container theme={getCurrentTheme()}>
       <Header>
         <BackButton onPress={navigation.goBack}>
-          <Icon name="chevron-left" color="#000" size={32} />
+          <Icon
+            name="chevron-left"
+            color={getCurrentTheme() === 'light' ? '#000' : '#fff'}
+            size={32}
+          />
         </BackButton>
-        <Title>Configurações</Title>
+        <Title theme={getCurrentTheme()}>Configurações</Title>
         <Empty>
-          <Icon name="chevron-left" color="#fff" size={32} />
+          <Icon name="chevron-left" color="transparent" size={32} />
         </Empty>
       </Header>
 
       <SettingsContainer>
         <ThemeSwitch>
           <SwitchInfo>
-            <SwitchTitle>Tema do aplicativo</SwitchTitle>
-            <SwitchDescription>
+            <SwitchTitle theme={getCurrentTheme()}>
+              Tema do aplicativo
+            </SwitchTitle>
+            <SwitchDescription theme={getCurrentTheme()}>
               {isEnabled ? 'Tema escuro' : 'Tema claro'}
             </SwitchDescription>
           </SwitchInfo>
           <Switch
-            trackColor={{ false: '#e9e9eb', true: '#000' }}
+            trackColor={{ false: '#e9e9eb', true: '#4cf964' }}
+            thumbColor="#fff"
             onValueChange={handleToggleSwitch}
             value={isEnabled}
           />
         </ThemeSwitch>
 
-        <LogOutButton onPress={signOut}>
-          <LogOutButtonText>Log out</LogOutButtonText>
-          <Icon name="chevron-right" color="#710502" size={18} />
+        <LogOutButton theme={getCurrentTheme()} onPress={signOut}>
+          <LogOutButtonText theme={getCurrentTheme()}>Log out</LogOutButtonText>
+          <Icon
+            name="chevron-right"
+            color={getCurrentTheme() === 'light' ? '#710502' : '#8A0E0B'}
+            size={18}
+          />
         </LogOutButton>
       </SettingsContainer>
     </Container>

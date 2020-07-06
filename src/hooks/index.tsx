@@ -2,10 +2,13 @@ import React from 'react';
 
 import { AuthProvider } from './auth';
 import { StatusBarProvider } from './statusBar';
+import { ThemeProvider } from './theme';
 
 const AppProvider: React.FC = ({ children }) => (
   <AuthProvider>
-    <StatusBarProvider>{children}</StatusBarProvider>
+    <ThemeProvider>
+      <StatusBarProvider>{children}</StatusBarProvider>
+    </ThemeProvider>
   </AuthProvider>
 );
 

@@ -109,3 +109,20 @@ export const TextInput = styled.TextInput`
 export const Icon = styled(Feather)`
   margin-right: 16px;
 `;
+
+export const LoadContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+`;
+
+export const SuggestLoadContainer = styled.View`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #000a;
+  z-index: 20;
+  justify-content: center;
+  align-items: center;
+`;

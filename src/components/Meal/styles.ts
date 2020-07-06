@@ -1,12 +1,16 @@
 import styled, { css } from 'styled-components/native';
 
-interface ContainerProps {
+interface ThemeProps {
+  theme: 'light' | 'dark';
+}
+
+interface ContainerProps extends ThemeProps {
   grow: boolean;
 }
 
 export const Container = styled.View<ContainerProps>`
   flex: 1;
-  background: #fff;
+  background: ${(props) => (props.theme === 'light' ? '#fff' : '#1a1a1a')};
   padding: 32px;
   position: relative;
   ${(props) =>
@@ -22,10 +26,10 @@ export const Container = styled.View<ContainerProps>`
   elevation: 4;
 `;
 
-export const MealTitle = styled.Text`
+export const MealTitle = styled.Text<ThemeProps>`
   font-size: 20px;
   font-family: 'Roboto_700Bold';
-  color: #000;
+  color: ${(props) => (props.theme === 'light' ? '#000' : '#fff')};
   text-transform: capitalize;
 `;
 
@@ -41,6 +45,7 @@ export const RatingText = styled.Text`
   font-size: 16px;
   margin-left: 8px;
   font-family: 'Roboto_400Regular';
+  color: ${(props) => (props.theme === 'light' ? '#000' : '#fff')};
 `;
 
 export const NotAttendant = styled.Text`
@@ -50,14 +55,14 @@ export const NotAttendant = styled.Text`
   font-family: 'Roboto_500Medium';
 `;
 
-interface ActionButtonProps {
+interface ActionButtonProps extends ThemeProps {
   attendant?: boolean;
   rate?: boolean;
 }
 
 export const ActionButton = styled.TouchableOpacity<ActionButtonProps>`
   margin-left: 8px;
-  background: #b0b0bf;
+  background: ${(props) => (props.theme === 'light' ? '#b0b0bf' : '#666')};
   ${(props) =>
     props.attendant &&
     css`
@@ -94,17 +99,17 @@ export const FoodItem = styled.View`
   align-items: center;
 `;
 
-export const FoodText = styled.Text`
+export const FoodText = styled.Text<ThemeProps>`
   margin-left: 16px;
   font-size: 16px;
   font-family: 'Roboto_700Bold';
-  color: #555763;
+  color: ${(props) => (props.theme === 'light' ? '#555763' : '#999')};
 `;
 
-export const FoodDescription = styled.Text`
+export const FoodDescription = styled.Text<ThemeProps>`
   font-size: 16px;
   font-family: 'Roboto_400Regular';
-  color: #555763;
+  color: ${(props) => (props.theme === 'light' ? '#555763' : '#999')};
 `;
 
 export const MealImage = styled.Image`

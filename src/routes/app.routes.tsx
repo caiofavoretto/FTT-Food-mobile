@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { AppLoading } from 'expo';
+import { useTheme } from '../hooks/theme';
 
 import {
   Feather as Icon,
@@ -28,6 +29,7 @@ const AppRoutes: React.FC = () => {
   const [loadingMenu, setLoadingMenu] = useState(true);
 
   const navigation = useNavigation();
+  const { getCurrentTheme } = useTheme();
 
   useEffect(() => {
     setTimeout(() => {
@@ -50,38 +52,74 @@ const AppRoutes: React.FC = () => {
     return <AppLoading />;
   }
 
+  const darkThemeStyle = {
+    borderTopWidth: 0,
+    borderTopColor: 'transparent',
+
+    elevation: 0,
+    shadowColor: 'transparent',
+    shadowOpacity: 0,
+    shadowOffset: {
+      height: 0,
+    },
+    shadowRadius: 0,
+
+    height: Platform.OS === 'ios' ? 71 : 60,
+  };
+
+  const lightThemeStyle = {
+    height: Platform.OS === 'ios' ? 71 : 60,
+  };
+
   return (
     <AppTabs.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName = '';
 
+          const parsedSize = Platform.OS === 'ios' ? 26 : 20;
+
           if (route.name === 'Search') {
             iconName = 'search';
-            return <FontAwesome name={iconName} size={26} color={color} />;
+            return (
+              <FontAwesome name={iconName} size={parsedSize} color={color} />
+            );
           } else if (route.name === 'Menu') {
             iconName = 'book-open';
-            return <FontAwesome5 name={iconName} size={26} color={color} />;
+            return (
+              <FontAwesome5 name={iconName} size={parsedSize} color={color} />
+            );
           } else if (route.name === 'Feed') {
             iconName = 'favorite';
-            return <MaterialIcons name={iconName} size={28} color={color} />;
+            return (
+              <MaterialIcons
+                name={iconName}
+                size={parsedSize + 2}
+                color={color}
+              />
+            );
           } else if (route.name === 'Profile') {
             iconName = 'user-alt';
-            return <FontAwesome5 name={iconName} size={26} color={color} />;
+            return (
+              <FontAwesome5 name={iconName} size={parsedSize} color={color} />
+            );
           }
 
           // You can return any component that you like here!
-          return <Icon name={iconName} size={28} color={color} />;
+          return <Icon name={iconName} size={parsedSize + 2} color={color} />;
         },
         tabBarLabel: ({ focused, color }) => {
+          const mainColor =
+            getCurrentTheme() === 'light' ? '#710502' : '#8A0E0B';
+
           if (route.name === 'Search') {
-            color = focused ? '#710502' : '#fff';
+            color = focused ? mainColor : '#fff0';
           } else if (route.name === 'Menu') {
-            color = focused ? '#710502' : '#fff';
+            color = focused ? mainColor : '#fff0';
           } else if (route.name === 'Feed') {
-            color = focused ? '#710502' : '#fff';
+            color = focused ? mainColor : '#fff0';
           } else if (route.name === 'Profile') {
-            color = focused ? '#710502' : '#fff';
+            color = focused ? mainColor : '#fff0';
           }
 
           // You can return any component that you like here!
@@ -89,23 +127,22 @@ const AppRoutes: React.FC = () => {
         },
       })}
       tabBarOptions={{
-        activeTintColor: '#710502',
+        activeTintColor: getCurrentTheme() === 'light' ? '#710502' : '#8A0E0B',
         inactiveTintColor: '#B0B0BF',
         tabStyle: {
-          backgroundColor: 'transparent',
-          paddingTop: 16,
+          opacity: 1,
+          backgroundColor: getCurrentTheme() === 'light' ? '#fff' : '#121212',
+          paddingTop: Platform.OS === 'ios' ? 16 : 8,
           paddingBottom: Platform.OS === 'ios' ? 0 : 8,
         },
-        style: {
-          height: Platform.OS === 'ios' ? 100 : 80,
-        },
+        style: getCurrentTheme() === 'light' ? lightThemeStyle : darkThemeStyle,
       }}
       initialRouteName="Menu"
       backBehavior="initialRoute"
     >
       {!loadingMenu && <AppTabs.Screen name="Search" component={Search} />}
       <AppTabs.Screen name="Menu" component={Menu} />
-      {!loadingMenu && <AppTabs.Screen name="Feed" component={Feed} />}
+      {/* {!loadingMenu && <AppTabs.Screen name="Feed" component={Feed} />} */}
       {!loadingMenu && (
         <AppTabs.Screen
           name="Profile"

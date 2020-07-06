@@ -1,15 +1,14 @@
-import React, { useEffect, useState, useCallback, useContext } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { FontAwesome as Icon } from '@expo/vector-icons';
-import { format, addDays, parseISO } from 'date-fns';
+
+import { format } from 'date-fns';
 import pt from 'date-fns/locale/pt';
-import { Dimensions, Alert } from 'react-native';
+import { Dimensions, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { useStatusBar } from '../../hooks/statusBar';
 import { useAuth } from '../../hooks/auth';
-import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../hooks/theme';
 
 import api from '../../services/api';
-
-import foodImg from '../../assets/food.jpg';
 
 import Meal from '../../components/Meal';
 import MealDetails from '../../components/MealDetails';
@@ -23,6 +22,7 @@ import {
   MenuContainer,
   MenuContent,
   MenuNav,
+  LoadContainer,
 } from './styles';
 
 interface FoodsData {
@@ -39,6 +39,7 @@ interface MealData {
   dayOfTheWeek: string;
   image_url: string;
   rating: number;
+  rated: number;
   foods: FoodsData[];
   today: boolean;
   attendant: string;
@@ -58,29 +59,39 @@ interface MenuData {
   updated_at: Date;
 }
 
+interface RateParams {
+  meal_id: string;
+  date: string;
+  grade: number;
+}
+
 const Menu: React.FC = () => {
+  const menuContainerRef = useRef<ScrollView>(null);
+
+  const [loading, setLoading] = useState(true);
+  const [rateLoad, setRateLoad] = useState(false);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [menu, setMenu] = useState<MenuData>({} as MenuData);
   const [meals, setMeals] = useState<MealData[]>([]);
 
-  const navigation = useNavigation();
-
   const [menuPage, setMenuPage] = useState(1);
 
   const { setToDark, setToLight } = useStatusBar();
+  const { getCurrentTheme } = useTheme();
   const { user } = useAuth();
 
-  navigation.addListener('focus', () => {
-    if (modalOpen) {
-      setToLight();
-    } else {
+  useEffect(() => {
+    if (getCurrentTheme() === 'light') {
       setToDark();
+    } else {
+      setToLight();
     }
-  });
-
-  useEffect(setToDark, []);
+  }, []);
 
   useEffect(() => {
+    setLoading(true);
+
     const today = format(new Date(), 'yyyy-MM-dd', {
       locale: pt,
     });
@@ -95,19 +106,11 @@ const Menu: React.FC = () => {
         const mealsResponse: MealData[] = [];
 
         if (menuResponse.monday_meal) {
-          const meal = menuResponse.monday_meal as MealData;
-
-          meal.attendant = 'true';
-
-          mealsResponse.push(meal);
+          mealsResponse.push(menuResponse.monday_meal);
         }
 
         if (menuResponse.tuesday_meal) {
-          const meal = menuResponse.tuesday_meal as MealData;
-
-          meal.attendant = 'true';
-
-          mealsResponse.push(meal);
+          mealsResponse.push(menuResponse.tuesday_meal);
         }
 
         if (menuResponse.wednesday_meal) {
@@ -119,28 +122,40 @@ const Menu: React.FC = () => {
         }
 
         if (menuResponse.friday_meal) {
-          mealsResponse.push(menuResponse.friday_meal);
+          const meal = menuResponse.friday_meal;
+          mealsResponse.push(meal);
         }
 
         setMeals(mealsResponse);
+
+        setLoading(false);
+
+        setTimeout(() => {
+          const mealIndex = meals.findIndex((meal) => meal.today);
+          const { width } = Dimensions.get('window');
+
+          menuContainerRef.current?.scrollTo({
+            x: mealIndex * width,
+            y: 0,
+            animated: true,
+          });
+        }, 500);
       })
       .catch((err) => {
         console.log(err.response.data);
+
+        setLoading(false);
       });
   }, []);
 
   const handleOpenModal = useCallback(() => {
-    console.log('open');
     if (!modalOpen) {
-      setToLight();
       setModalOpen(true);
     }
   }, [modalOpen]);
 
   const handleCloseModal = useCallback(() => {
-    console.log('close');
     if (modalOpen) {
-      setToDark();
       setModalOpen(false);
     }
   }, [modalOpen]);
@@ -153,7 +168,6 @@ const Menu: React.FC = () => {
   }, []);
 
   const handleAttendance = useCallback(async (attendance: string) => {
-    console.log(attendance);
     try {
       if (!attendance) {
         const response = await api.post('/attendances');
@@ -187,10 +201,44 @@ const Menu: React.FC = () => {
     }
   }, []);
 
+  const handleRate = useCallback(
+    async (data: RateParams) => {
+      try {
+        setRateLoad(true);
+        const newMeal = await api.post<MealData>('ratings', {
+          ...data,
+          menu_id: menu.id,
+        });
+
+        setMeals(
+          meals.filter((meal) => {
+            if (meal.id === data.meal_id) {
+              meal.rating = newMeal.data.rating;
+
+              if (meal.date === data.date) {
+                meal.rated = newMeal.data.rated;
+              }
+            }
+            return meal;
+          }),
+        );
+
+        setRateLoad(false);
+      } catch (err) {
+        const { message } = err.response.data;
+
+        Alert.alert('Ops.', message);
+
+        setRateLoad(false);
+      }
+    },
+    [menu, meals],
+  );
+
   return (
-    <Container>
+    <Container theme={getCurrentTheme()}>
       <Header>
-        <Title>
+        <Title theme={getCurrentTheme()}>
           Bem vind{user.gender.description === 'Masculino' ? 'o' : 'a'},{' '}
           <Name>{user.name}</Name>
         </Title>
@@ -206,51 +254,70 @@ const Menu: React.FC = () => {
         </DateDescription>
       </Header>
 
-      <MenuContainer
-        horizontal
-        onScroll={handleMenuContainerScroll}
-        contentContainerStyle={{ width: `${100 * meals.length}%` }}
-        showsHorizontalScrollIndicator={false}
-        scrollEventThrottle={200}
-        decelerationRate="fast"
-        pagingEnabled
-        scrollEnabled={!modalOpen}
-      >
-        {meals.map((meal) => (
-          <MenuContent
-            activeOpacity={1}
-            onPress={handleOpenModal}
-            key={`${meal.id}-${meal.date}`}
-            disabled={modalOpen}
+      {!loading ? (
+        <>
+          <MenuContainer
+            ref={menuContainerRef}
+            horizontal
+            onScroll={handleMenuContainerScroll}
+            contentContainerStyle={{ width: `${100 * meals.length}%` }}
+            showsHorizontalScrollIndicator={false}
+            scrollEventThrottle={200}
+            decelerationRate="fast"
+            pagingEnabled
+            scrollEnabled={!modalOpen}
           >
-            {modalOpen && (
-              <MealDetails
-                close={handleCloseModal}
-                grow={modalOpen}
-                data={meal}
+            {meals.map((meal) => (
+              <MenuContent
+                activeOpacity={1}
+                onPress={handleOpenModal}
+                key={`${meal.id}-${meal.date}`}
+                disabled={modalOpen}
+              >
+                {modalOpen && (
+                  <MealDetails
+                    loading={rateLoad}
+                    handleRate={handleRate}
+                    handleAttendance={handleAttendance}
+                    close={handleCloseModal}
+                    grow={modalOpen}
+                    data={meal}
+                  />
+                )}
+                {!modalOpen && (
+                  <Meal
+                    handleAttendance={handleAttendance}
+                    open={handleOpenModal}
+                    grow={modalOpen}
+                    data={meal}
+                  />
+                )}
+              </MenuContent>
+            ))}
+          </MenuContainer>
+          <MenuNav>
+            {meals.map((_, index) => (
+              <Icon
+                key={String(index)}
+                name="circle"
+                style={{ marginHorizontal: 8 }}
+                size={8}
+                color={
+                  menuPage === index + 1
+                    ? getCurrentTheme() === 'light'
+                      ? '#710502'
+                      : '#8A0E0B'
+                    : '#B0B0BF'
+                }
               />
-            )}
-            {!modalOpen && (
-              <Meal
-                handleAttendance={handleAttendance}
-                grow={modalOpen}
-                data={meal}
-              />
-            )}
-          </MenuContent>
-        ))}
-      </MenuContainer>
-      <MenuNav>
-        {meals.map((_, index) => (
-          <Icon
-            key={String(index)}
-            name="circle"
-            style={{ marginHorizontal: 8 }}
-            size={8}
-            color={menuPage === index + 1 ? '#710502' : '#B0B0BF'}
-          />
-        ))}
-      </MenuNav>
+            ))}
+          </MenuNav>
+        </>
+      ) : (
+        <LoadContainer>
+          <ActivityIndicator style={{ zIndex: 21 }} />
+        </LoadContainer>
+      )}
     </Container>
   );
 };

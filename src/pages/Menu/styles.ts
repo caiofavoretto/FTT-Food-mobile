@@ -6,9 +6,13 @@ import Constants from 'expo-constants';
 
 const width = Dimensions.get('window');
 
-export const Container = styled.SafeAreaView`
+interface ThemeProps {
+  theme: 'light' | 'dark';
+}
+
+export const Container = styled.SafeAreaView<ThemeProps>`
   flex: 1;
-  background: #fff;
+  background: ${(props) => (props.theme === 'light' ? '#fff' : '#000')};
 
   ${Platform.OS === 'android' &&
   css`
@@ -17,14 +21,18 @@ export const Container = styled.SafeAreaView`
 `;
 
 export const Header = styled.View`
-  background: #fff;
   padding: 32px;
+
+  ${Platform.OS === 'ios' &&
+  css`
+    padding-top: 16px;
+  `}
 `;
 
-export const Title = styled.Text`
+export const Title = styled.Text<ThemeProps>`
   font-size: 28px;
   font-family: 'Roboto_700Bold';
-  color: #000;
+  color: ${(props) => (props.theme === 'light' ? '#000' : '#fff')};
 `;
 
 export const Name = styled.Text`
@@ -75,4 +83,9 @@ export const MenuNav = styled.View`
   flex-direction: row;
   justify-content: center;
   align-items: center;
+`;
+
+export const LoadContainer = styled.View`
+  flex: 1;
+  justify-content: center;
 `;

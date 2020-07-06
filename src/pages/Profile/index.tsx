@@ -1,5 +1,5 @@
-import React, { useEffect, useCallback, useState } from 'react';
-import { Platform, Alert, Text, View } from 'react-native';
+import React, { useEffect, useCallback } from 'react';
+import { Platform, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Feather as Icon } from '@expo/vector-icons';
 
@@ -7,6 +7,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { useStatusBar } from '../../hooks/statusBar';
 import { useAuth } from '../../hooks/auth';
 import api from '../../services/api';
+import { useTheme } from '../../hooks/theme';
 
 import {
   Container,
@@ -37,7 +38,8 @@ interface Params {
 }
 
 const Profile: React.FC = () => {
-  const { setToDark } = useStatusBar();
+  const { setToDark, setToLight } = useStatusBar();
+  const { getCurrentTheme } = useTheme();
   const { user, updateUser } = useAuth();
 
   const navigation = useNavigation();
@@ -46,8 +48,16 @@ const Profile: React.FC = () => {
 
   const { navigateToEditProfile } = route.params as Params;
 
-  navigation.addListener('focus', setToDark);
-  useEffect(setToDark, []);
+  useEffect(() => {
+    if (getCurrentTheme() === 'light') {
+      setToDark();
+    } else {
+      setToLight();
+    }
+  }, []);
+  useEffect(() => {
+    console.log(user);
+  }, []);
 
   const requestCameraRollPermission = useCallback(async (): Promise<
     boolean
@@ -111,18 +121,19 @@ const Profile: React.FC = () => {
     navigateToEditProfile(params);
   }, []);
 
-  console.log(user.avatar_url);
-
   return (
-    <Container>
-      <Header>
+    <Container theme={getCurrentTheme()}>
+      <Header theme={getCurrentTheme()}>
         <User>
           <AvatarContainer onPress={handleUpdateAvatar}>
-            <Avatar source={{ uri: user.avatar_url }} />
-            {!user.avatar_url && <Icon name="user" color="#fff" size={26} />}
+            {user.avatar_url ? (
+              <Avatar source={{ uri: user.avatar_url }} />
+            ) : (
+              <Icon name="user" color="#fff" size={26} />
+            )}
           </AvatarContainer>
           <UserInfo>
-            <UserName>
+            <UserName theme={getCurrentTheme()}>
               {user.name} {user.last_name}
             </UserName>
             <Registry>{user.registry}</Registry>
@@ -136,6 +147,7 @@ const Profile: React.FC = () => {
 
       <Options>
         <OptionButton
+          theme={getCurrentTheme()}
           onPress={() =>
             handleChangeProfile({
               title: 'E-mail',
@@ -145,36 +157,53 @@ const Profile: React.FC = () => {
           }
         >
           <Option>
-            <Icon name="mail" color="#000" size={22} />
+            <Icon
+              name="mail"
+              color={getCurrentTheme() === 'light' ? '#000' : '#fff'}
+              size={22}
+            />
             <Content>
-              <Title>E-mail</Title>
-              <Description>{user.email}</Description>
+              <Title theme={getCurrentTheme()}>E-mail</Title>
+              <Description theme={getCurrentTheme()}>{user.email}</Description>
             </Content>
           </Option>
           <Icon name="chevron-right" color="#b0b0bf" size={18} />
         </OptionButton>
 
         <OptionButton
+          theme={getCurrentTheme()}
           onPress={() =>
             handleChangeProfile({ title: 'Senha', type: 'password' })
           }
         >
           <Option>
-            <Icon name="lock" color="#000" size={22} />
+            <Icon
+              name="lock"
+              color={getCurrentTheme() === 'light' ? '#000' : '#fff'}
+              size={22}
+            />
             <Content>
-              <Title>Senha</Title>
-              <Description style={{ fontSize: 8 }}>⬤ ⬤ ⬤ ⬤ ⬤ ⬤</Description>
+              <Title theme={getCurrentTheme()}>Senha</Title>
+              <Description theme={getCurrentTheme()} style={{ fontSize: 8 }}>
+                ⬤ ⬤ ⬤ ⬤ ⬤ ⬤
+              </Description>
             </Content>
           </Option>
           <Icon name="chevron-right" color="#b0b0bf" size={18} />
         </OptionButton>
 
-        <OptionButton>
+        <OptionButton theme={getCurrentTheme()}>
           <Option>
-            <Icon name="bell" color="#000" size={22} />
+            <Icon
+              name="bell"
+              color={getCurrentTheme() === 'light' ? '#000' : '#fff'}
+              size={22}
+            />
             <Content>
-              <Title>Notificações</Title>
-              <Description>Estamos sempre melhorando</Description>
+              <Title theme={getCurrentTheme()}>Notificações</Title>
+              <Description theme={getCurrentTheme()}>
+                Estamos sempre melhorando
+              </Description>
             </Content>
           </Option>
           <Icon name="chevron-right" color="#b0b0bf" size={18} />

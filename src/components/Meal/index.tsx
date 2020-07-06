@@ -4,6 +4,7 @@ import {
   MaterialCommunityIcons,
   FontAwesome5,
 } from '@expo/vector-icons';
+import { useTheme } from '../../hooks/theme';
 
 import foodImg from '../../assets/food.jpg';
 
@@ -37,6 +38,7 @@ interface MealData {
   image_url: string;
   rating: number;
   foods: FoodsData[];
+  rated: number;
   today: boolean;
   attendant: string;
 }
@@ -45,22 +47,32 @@ interface MealProps {
   data: MealData;
   grow: boolean;
   handleAttendance(attendance: string): void;
+  open(): void;
 }
 
-const Meal: React.FC<MealProps> = ({ data, grow, handleAttendance }) => {
+const Meal: React.FC<MealProps> = ({ data, grow, handleAttendance, open }) => {
+  const { getCurrentTheme } = useTheme();
+
   return (
-    <Container grow={grow}>
-      <MealTitle>{data.dayOfTheWeek}</MealTitle>
+    <Container grow={grow} theme={getCurrentTheme()}>
+      <MealTitle theme={getCurrentTheme()}>{data.dayOfTheWeek}</MealTitle>
       <MealAction>
         {!data.today ? (
           data.attendant ? (
-            data.rating ? (
+            data.rated ? (
               <>
                 <Icon name="star" color="#f4a927" size={18} />
-                <RatingText>{data.rating.toFixed(1)}</RatingText>
+                <RatingText theme={getCurrentTheme()}>
+                  {data.rating.toFixed(1)}
+                </RatingText>
               </>
             ) : (
-              <ActionButton rate>
+              <ActionButton
+                activeOpacity={0.7}
+                rate
+                onPress={open}
+                theme={getCurrentTheme()}
+              >
                 <Icon name="star" color="#fff" size={12} />
                 <ActionButtonText>Avaliar</ActionButtonText>
               </ActionButton>
@@ -73,6 +85,7 @@ const Meal: React.FC<MealProps> = ({ data, grow, handleAttendance }) => {
             activeOpacity={0.7}
             attendant={!!data.attendant}
             onPress={() => handleAttendance(data.attendant)}
+            theme={getCurrentTheme()}
           >
             <FontAwesome5
               name={!!data.attendant ? 'user-check' : 'user-plus'}
@@ -88,14 +101,16 @@ const Meal: React.FC<MealProps> = ({ data, grow, handleAttendance }) => {
         {data.foods.map((food) => (
           <FoodItem key={food.id}>
             <MaterialCommunityIcons name="record-circle" color="#4D6219" />
-            <FoodText>
+            <FoodText theme={getCurrentTheme()}>
               {food.name}{' '}
-              <FoodDescription>({food.description})</FoodDescription>
+              <FoodDescription theme={getCurrentTheme()}>
+                ({food.description})
+              </FoodDescription>
             </FoodText>
           </FoodItem>
         ))}
       </FoodList>
-      <MealImage source={data.image_url || foodImg}></MealImage>
+      <MealImage source={{ uri: data.image_url || foodImg }}></MealImage>
     </Container>
   );
 };

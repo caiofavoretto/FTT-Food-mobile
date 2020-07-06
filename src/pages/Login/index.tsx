@@ -11,6 +11,7 @@ import {
 import { useStatusBar } from '../../hooks/statusBar';
 import { useAuth } from '../../hooks/auth';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../hooks/theme';
 
 import { Form } from '@unform/mobile';
 import { FormHandles } from '@unform/core';
@@ -42,15 +43,19 @@ const Login: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const passwordInputRef = useRef<TextInput>(null);
 
-  const { setToLight } = useStatusBar();
+  const { setToLight, setToDark } = useStatusBar();
+  const { getCurrentTheme } = useTheme();
   const { signIn } = useAuth();
 
   const navigation = useNavigation();
 
-  navigation.addListener('focus', setToLight);
-
-  useEffect(setToLight, []);
-
+  useEffect(() => {
+    if (getCurrentTheme() === 'light') {
+      setToDark();
+    } else {
+      setToLight();
+    }
+  }, []);
   const handleLogin = useCallback(
     async (data: SignInFormData) => {
       try {
