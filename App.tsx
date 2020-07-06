@@ -1,7 +1,7 @@
+import 'react-native-gesture-handler';
+
 import React from 'react';
 import { AppLoading } from 'expo';
-import { StatusBarProvider } from './src/hooks/statusBar';
-import { StatusBar } from 'react-native';
 
 import {
   Roboto_400Regular,
@@ -10,7 +10,9 @@ import {
   useFonts,
 } from '@expo-google-fonts/roboto';
 
-import Routes from './src/routes';
+import AppProvider from './src/hooks';
+
+import Index from './src/index';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -24,8 +26,8 @@ export default function App() {
   }
 
   return (
-    <StatusBarProvider>
-      <Routes />
-    </StatusBarProvider>
+    <AppProvider>
+      <Index />
+    </AppProvider>
   );
 }
